@@ -1,0 +1,12 @@
+monitortrans\list.o: ../Middlewares/Third_Party/FreeRTOS/Source/list.c
+monitortrans\list.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
+monitortrans\list.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h
+monitortrans\list.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
+monitortrans\list.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+monitortrans\list.o: ../Core/Inc/FreeRTOSConfig.h
+monitortrans\list.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h
+monitortrans\list.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/portable.h
+monitortrans\list.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/deprecated_definitions.h
+monitortrans\list.o: ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F/portmacro.h
+monitortrans\list.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h
+monitortrans\list.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h

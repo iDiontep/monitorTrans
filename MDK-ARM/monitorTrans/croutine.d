@@ -1,0 +1,14 @@
+monitortrans\croutine.o: ../Middlewares/Third_Party/FreeRTOS/Source/croutine.c
+monitortrans\croutine.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h
+monitortrans\croutine.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
+monitortrans\croutine.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+monitortrans\croutine.o: ../Core/Inc/FreeRTOSConfig.h
+monitortrans\croutine.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h
+monitortrans\croutine.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/portable.h
+monitortrans\croutine.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/deprecated_definitions.h
+monitortrans\croutine.o: ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F/portmacro.h
+monitortrans\croutine.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h
+monitortrans\croutine.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/task.h
+monitortrans\croutine.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h
+monitortrans\croutine.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/croutine.h
+monitortrans\croutine.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h
