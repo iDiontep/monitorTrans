@@ -1,0 +1,2 @@
+code_full\image_alternate_theme_images_backgrounds_800x480_rays.o: ../touchgfx/generated/images/src/__generated/image_alternate_theme_images_backgrounds_800x480_rays.cpp
+code_full\image_alternate_theme_images_backgrounds_800x480_rays.o: ../middlewares/st/touchgfx/framework/include/touchgfx/hal/Config.hpp

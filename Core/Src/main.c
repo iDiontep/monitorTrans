@@ -18,14 +18,24 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "gfxmmu_lut.h"
 #include "cmsis_os.h"
+#include "crc.h"
+#include "dma2d.h"
+#include "gfxmmu.h"
 #include "i2c.h"
 #include "ltdc.h"
+#include "octospi.h"
+#include "tim.h"
+#include "usart.h"
+#include "wwdg.h"
 #include "gpio.h"
+#include "app_touchgfx.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "string.h"
+#include "stdio.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -46,7 +56,8 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+static const uint8_t ADV7342_address = 0x54 << 1;
+static const uint8_t reg_tx = 0x35;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -69,16 +80,19 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-
+	HAL_StatusTypeDef ret;
+	uint8_t buf[12];
+	int16_t val;
+	float temp_c = 0;
   /* USER CODE END 1 */
 
-  /* MCU Configuration---------------56ó-----------------------------------------*/
+  /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
+	
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -90,11 +104,30 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_LTDC_Init();
   MX_I2C1_Init();
+	ret = HAL_I2C_Master_Transmit(&hi2c1, ADV7342_address, buf, 1, HAL_MAX_DELAY);
+  MX_I2C3_SMBUS_Init();
+  MX_LTDC_Init();
+  MX_USART1_UART_Init();
+  MX_OCTOSPI1_Init();
+  MX_OCTOSPI2_Init();
+  MX_TIM2_Init();
+  MX_TIM3_Init();
+  MX_GFXMMU_Init();
+  MX_CRC_Init();
+  MX_DMA2D_Init();
+  MX_WWDG_Init();
+  MX_TouchGFX_Init();
+  /* Call PreOsInit function */
+  MX_TouchGFX_PreOSInit();
   /* USER CODE BEGIN 2 */
-
+	
+	strcpy((char*)buf, 'Hello!\r\n');
+	HAL_UART_Transmit(&huart1, buf, strlen((char*)buf), HAL_MAX_DELAY);
   /* USER CODE END 2 */
+
+  /* Init scheduler */
+  osKernelInitialize();
 
   /* Call init function for freertos objects (in cmsis_os2.c) */
   MX_FREERTOS_Init();
@@ -108,6 +141,31 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+		buf[0] = reg_tx;
+	  ret = HAL_I2C_Master_Transmit(&hi2c1, ADV7342_address, buf, 1, HAL_MAX_DELAY);
+	  if(ret != HAL_OK)
+	  {
+		  strcpy((char*)buf, "Error Tx\r\n");
+	  } else {
+				ret = HAL_I2C_Master_Transmit(&hi2c1, ADV7342_address, buf, 2, HAL_MAX_DELAY);
+				if(ret != HAL_OK)
+		{
+		  strcpy((char*)buf, "Error Rx\r\n");
+		}	else	{
+			  val = ((int16_t)buf[0] << 4 | (buf[1])>>4);
+		if (val > 0x7FF){
+			val |= 0xF000;
+		}
+	temp_c = val * 0.0625;
+	temp_c *= 100;
+	sprintf((char*)buf, "%u.%02u \r\n", ((unsigned int)temp_c / 100), ((unsigned int)temp_c % 100));
+						}
+					}
+
+
+	 // strcpy((char*)buf, 'Hello!\r\n');
+	  HAL_UART_Transmit(&huart1, buf, strlen((char*)buf), HAL_MAX_DELAY);
+	  HAL_Delay(500);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -134,15 +192,17 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLM = 1;
   RCC_OscInitStruct.PLL.PLLN = 27;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = RCC_PLLQ_DIV2;
-  RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV8;
+  RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV4;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
@@ -153,7 +213,7 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV2;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
@@ -170,6 +230,27 @@ void SystemClock_Config(void)
 /* USER CODE BEGIN 4 */
 
 /* USER CODE END 4 */
+
+/**
+  * @brief  Period elapsed callback in non blocking mode
+  * @note   This function is called  when TIM1 interrupt took place, inside
+  * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
+  * a global variable "uwTick" used as application time base.
+  * @param  htim : TIM handle
+  * @retval None
+  */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  /* USER CODE BEGIN Callback 0 */
+
+  /* USER CODE END Callback 0 */
+  if (htim->Instance == TIM1) {
+    HAL_IncTick();
+  }
+  /* USER CODE BEGIN Callback 1 */
+
+  /* USER CODE END Callback 1 */
+}
 
 /**
   * @brief  This function is executed in case of error occurrence.

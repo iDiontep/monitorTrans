@@ -21,37 +21,11 @@
 #include "i2c.h"
 
 /* USER CODE BEGIN 0 */
-#define ADV7343_I2C_ADDR_WRITE  0xD4 // Адрес записи (0xD4 = 0xD6 & 0xFE)
-#define ADV7343_I2C_ADDR_READ   0xD5 // Адрес чтения (0xD5 = 0xD6 | 0x01)
-
-void ADV7343_Init(void) {
-    // Здесь можно добавить команды инициализации
-    // Например, устанавливаем необходимые регистры
-}
-
-HAL_StatusTypeDef ADV7343_WriteRegister(uint8_t reg, uint8_t data) {
-    uint8_t buf[2];
-    buf[0] = reg;   // Регистровый адрес
-    buf[1] = data;  // Данные для записи
-
-    return HAL_I2C_Master_Transmit(&hi2c1, ADV7343_I2C_ADDR_WRITE, buf, 2, HAL_MAX_DELAY);
-}
-
-HAL_StatusTypeDef ADV7343_ReadRegister(uint8_t reg, uint8_t *data) {
-    // Сначала отправляем адрес регистра, который хотим прочитать
-    HAL_StatusTypeDef status = HAL_I2C_Master_Transmit(&hi2c1, ADV7343_I2C_ADDR_WRITE, &reg, 1, HAL_MAX_DELAY);
-
-    if (status != HAL_OK) {
-        return status; // Ошибка передачи адреса регистра
-    }
-
-    // Затем читаем данные из этого регистра
-    return HAL_I2C_Master_Receive(&hi2c1, ADV7343_I2C_ADDR_READ, data, 1, HAL_MAX_DELAY);
-}
 
 /* USER CODE END 0 */
 
 I2C_HandleTypeDef hi2c1;
+SMBUS_HandleTypeDef hsmbus3;
 
 /* I2C1 init function */
 void MX_I2C1_Init(void)
@@ -65,7 +39,7 @@ void MX_I2C1_Init(void)
 
   /* USER CODE END I2C1_Init 1 */
   hi2c1.Instance = I2C1;
-  hi2c1.Init.Timing = 0x0040030A;
+  hi2c1.Init.Timing = 0x00906997;
   hi2c1.Init.OwnAddress1 = 0;
   hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
   hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
@@ -91,13 +65,50 @@ void MX_I2C1_Init(void)
   {
     Error_Handler();
   }
-
-  /** I2C Fast mode Plus enable
-  */
-  HAL_I2CEx_EnableFastModePlus(I2C_FASTMODEPLUS_I2C1);
   /* USER CODE BEGIN I2C1_Init 2 */
 
   /* USER CODE END I2C1_Init 2 */
+
+}
+/* I2C3 init function */
+
+void MX_I2C3_SMBUS_Init(void)
+{
+
+  /* USER CODE BEGIN I2C3_Init 0 */
+
+  /* USER CODE END I2C3_Init 0 */
+
+  /* USER CODE BEGIN I2C3_Init 1 */
+
+  /* USER CODE END I2C3_Init 1 */
+  hsmbus3.Instance = I2C3;
+  hsmbus3.Init.Timing = 0x00906997;
+  hsmbus3.Init.AnalogFilter = SMBUS_ANALOGFILTER_ENABLE;
+  hsmbus3.Init.OwnAddress1 = 2;
+  hsmbus3.Init.AddressingMode = SMBUS_ADDRESSINGMODE_7BIT;
+  hsmbus3.Init.DualAddressMode = SMBUS_DUALADDRESS_DISABLE;
+  hsmbus3.Init.OwnAddress2 = 0;
+  hsmbus3.Init.OwnAddress2Masks = SMBUS_OA2_NOMASK;
+  hsmbus3.Init.GeneralCallMode = SMBUS_GENERALCALL_DISABLE;
+  hsmbus3.Init.NoStretchMode = SMBUS_NOSTRETCH_DISABLE;
+  hsmbus3.Init.PacketErrorCheckMode = SMBUS_PEC_DISABLE;
+  hsmbus3.Init.PeripheralMode = SMBUS_PERIPHERAL_MODE_SMBUS_SLAVE;
+  hsmbus3.Init.SMBusTimeout = 0x00008149;
+  if (HAL_SMBUS_Init(&hsmbus3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** configuration Alert Mode
+  */
+  if (HAL_SMBUS_EnableAlert_IT(&hsmbus3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN I2C3_Init 2 */
+
+  /* USER CODE END I2C3_Init 2 */
 
 }
 
@@ -135,9 +146,63 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef* i2cHandle)
 
     /* I2C1 clock enable */
     __HAL_RCC_I2C1_CLK_ENABLE();
+
+    /* I2C1 interrupt Init */
+    HAL_NVIC_SetPriority(I2C1_EV_IRQn, 5, 0);
+    HAL_NVIC_EnableIRQ(I2C1_EV_IRQn);
+    HAL_NVIC_SetPriority(I2C1_ER_IRQn, 5, 0);
+    HAL_NVIC_EnableIRQ(I2C1_ER_IRQn);
   /* USER CODE BEGIN I2C1_MspInit 1 */
 
   /* USER CODE END I2C1_MspInit 1 */
+  }
+}
+
+void HAL_SMBUS_MspInit(SMBUS_HandleTypeDef* smbusHandle)
+{
+
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+  RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
+  if(smbusHandle->Instance==I2C3)
+  {
+  /* USER CODE BEGIN I2C3_MspInit 0 */
+
+  /* USER CODE END I2C3_MspInit 0 */
+
+  /** Initializes the peripherals clock
+  */
+    PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_I2C3;
+    PeriphClkInit.I2c3ClockSelection = RCC_I2C3CLKSOURCE_PCLK1;
+    if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
+    {
+      Error_Handler();
+    }
+
+    __HAL_RCC_GPIOG_CLK_ENABLE();
+    HAL_PWREx_EnableVddIO2();
+    /**I2C3 GPIO Configuration
+    PG6     ------> I2C3_SMBA
+    PG7     ------> I2C3_SCL
+    PG8     ------> I2C3_SDA
+    */
+    GPIO_InitStruct.Pin = touch_INT_Pin|touch_SCL_Pin|touch_SDA_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+    GPIO_InitStruct.Alternate = GPIO_AF4_I2C3;
+    HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
+
+    /* I2C3 clock enable */
+    __HAL_RCC_I2C3_CLK_ENABLE();
+
+    /* I2C3 interrupt Init */
+    HAL_NVIC_SetPriority(I2C3_EV_IRQn, 5, 0);
+    HAL_NVIC_EnableIRQ(I2C3_EV_IRQn);
+    HAL_NVIC_SetPriority(I2C3_ER_IRQn, 5, 0);
+    HAL_NVIC_EnableIRQ(I2C3_ER_IRQn);
+  /* USER CODE BEGIN I2C3_MspInit 1 */
+
+  /* USER CODE END I2C3_MspInit 1 */
   }
 }
 
@@ -160,9 +225,43 @@ void HAL_I2C_MspDeInit(I2C_HandleTypeDef* i2cHandle)
 
     HAL_GPIO_DeInit(GPIOB, GPIO_PIN_9);
 
+    /* I2C1 interrupt Deinit */
+    HAL_NVIC_DisableIRQ(I2C1_EV_IRQn);
+    HAL_NVIC_DisableIRQ(I2C1_ER_IRQn);
   /* USER CODE BEGIN I2C1_MspDeInit 1 */
 
   /* USER CODE END I2C1_MspDeInit 1 */
+  }
+}
+
+void HAL_SMBUS_MspDeInit(SMBUS_HandleTypeDef* smbusHandle)
+{
+
+  if(smbusHandle->Instance==I2C3)
+  {
+  /* USER CODE BEGIN I2C3_MspDeInit 0 */
+
+  /* USER CODE END I2C3_MspDeInit 0 */
+    /* Peripheral clock disable */
+    __HAL_RCC_I2C3_CLK_DISABLE();
+
+    /**I2C3 GPIO Configuration
+    PG6     ------> I2C3_SMBA
+    PG7     ------> I2C3_SCL
+    PG8     ------> I2C3_SDA
+    */
+    HAL_GPIO_DeInit(touch_INT_GPIO_Port, touch_INT_Pin);
+
+    HAL_GPIO_DeInit(touch_SCL_GPIO_Port, touch_SCL_Pin);
+
+    HAL_GPIO_DeInit(touch_SDA_GPIO_Port, touch_SDA_Pin);
+
+    /* I2C3 interrupt Deinit */
+    HAL_NVIC_DisableIRQ(I2C3_EV_IRQn);
+    HAL_NVIC_DisableIRQ(I2C3_ER_IRQn);
+  /* USER CODE BEGIN I2C3_MspDeInit 1 */
+
+  /* USER CODE END I2C3_MspDeInit 1 */
   }
 }
 

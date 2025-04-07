@@ -1,0 +1,32 @@
+
+{
+  "Application": {
+    "Name": "code_full",
+    "TouchGfxPath": "../Middlewares/ST/touchgfx",
+    "AvailableColorDepths": [ 32 ],
+    "AvailableLCDs":
+    {
+      "32": "LCD32bpp"
+    },
+    "AvailableResolutions": [
+      {
+        "Width": 640,
+        "Height": 480
+      }
+    ],
+    "PostGenerateTargetCommand": "touchgfx update_project",
+    "Family": "STM32L4",
+    "SubFamily": "STM32L4R7/S7",
+    "Platform": "m4",
+    "Toolchain": "MDK-ARM V5.32",
+    "ProjectFile": "../code_full.ioc",
+    "OptionalComponentsRoot": "../Middlewares/ST/touchgfx_components",
+    "OptionalComponents": [
+    ],
+    "AdditionalFeatures": [
+      "CWRVector",
+      "VectorFonts"
+    ]
+  },
+  "Version": "4.25.0"
+}

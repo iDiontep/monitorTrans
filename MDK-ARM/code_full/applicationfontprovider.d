@@ -1,0 +1,15 @@
+code_full\applicationfontprovider.o: ../touchgfx/generated/fonts/src/applicationfontprovider.cpp
+code_full\applicationfontprovider.o: ../touchgfx/generated/fonts/include/fonts/ApplicationFontProvider.hpp
+code_full\applicationfontprovider.o: ../middlewares/st/touchgfx/framework/include/touchgfx/FontManager.hpp
+code_full\applicationfontprovider.o: ../middlewares/st/touchgfx/framework/include/touchgfx/Font.hpp
+code_full\applicationfontprovider.o: ../middlewares/st/touchgfx/framework/include/touchgfx/Unicode.hpp
+code_full\applicationfontprovider.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
+code_full\applicationfontprovider.o: ../middlewares/st/touchgfx/framework/include/touchgfx/hal/Types.hpp
+code_full\applicationfontprovider.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\assert.h
+code_full\applicationfontprovider.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+code_full\applicationfontprovider.o: ../middlewares/st/touchgfx/framework/include/touchgfx/hal/Config.hpp
+code_full\applicationfontprovider.o: ../touchgfx/generated/fonts/include/fonts/GeneratedFont.hpp
+code_full\applicationfontprovider.o: ../middlewares/st/touchgfx/framework/include/touchgfx/ConstFont.hpp
+code_full\applicationfontprovider.o: ../touchgfx/generated/texts/include/texts/TypedTextDatabase.hpp
+code_full\applicationfontprovider.o: ../middlewares/st/touchgfx/framework/include/touchgfx/TypedText.hpp
+code_full\applicationfontprovider.o: ../middlewares/st/touchgfx/framework/include/touchgfx/Texts.hpp

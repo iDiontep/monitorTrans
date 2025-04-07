@@ -1,0 +1,13 @@
+code_full\unmappeddatafont.o: ../touchgfx/generated/fonts/src/unmappeddatafont.cpp
+code_full\unmappeddatafont.o: ../middlewares/st/touchgfx/framework/include/touchgfx/hal/FlashDataReader.hpp
+code_full\unmappeddatafont.o: ../middlewares/st/touchgfx/framework/include/touchgfx/hal/Types.hpp
+code_full\unmappeddatafont.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\assert.h
+code_full\unmappeddatafont.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+code_full\unmappeddatafont.o: ../middlewares/st/touchgfx/framework/include/touchgfx/hal/Config.hpp
+code_full\unmappeddatafont.o: ../touchgfx/generated/fonts/include/fonts/ApplicationFontProvider.hpp
+code_full\unmappeddatafont.o: ../middlewares/st/touchgfx/framework/include/touchgfx/FontManager.hpp
+code_full\unmappeddatafont.o: ../middlewares/st/touchgfx/framework/include/touchgfx/Font.hpp
+code_full\unmappeddatafont.o: ../middlewares/st/touchgfx/framework/include/touchgfx/Unicode.hpp
+code_full\unmappeddatafont.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
+code_full\unmappeddatafont.o: ../touchgfx/generated/fonts/include/fonts/CompressedUnmappedFontCache.hpp
+code_full\unmappeddatafont.o: ../touchgfx/generated/fonts/include/fonts/UnmappedDataFont.hpp
