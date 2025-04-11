@@ -1,0 +1,15 @@
+monitortrans\applicationfontprovider.o: ../touchgfx/generated/fonts/src/applicationfontprovider.cpp
+monitortrans\applicationfontprovider.o: ../touchgfx/generated/fonts/include/fonts/ApplicationFontProvider.hpp
+monitortrans\applicationfontprovider.o: ../middlewares/st/touchgfx/framework/include/touchgfx/FontManager.hpp
+monitortrans\applicationfontprovider.o: ../middlewares/st/touchgfx/framework/include/touchgfx/Font.hpp
+monitortrans\applicationfontprovider.o: ../middlewares/st/touchgfx/framework/include/touchgfx/Unicode.hpp
+monitortrans\applicationfontprovider.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
+monitortrans\applicationfontprovider.o: ../middlewares/st/touchgfx/framework/include/touchgfx/hal/Types.hpp
+monitortrans\applicationfontprovider.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\assert.h
+monitortrans\applicationfontprovider.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+monitortrans\applicationfontprovider.o: ../middlewares/st/touchgfx/framework/include/touchgfx/hal/Config.hpp
+monitortrans\applicationfontprovider.o: ../touchgfx/generated/fonts/include/fonts/GeneratedFont.hpp
+monitortrans\applicationfontprovider.o: ../middlewares/st/touchgfx/framework/include/touchgfx/ConstFont.hpp
+monitortrans\applicationfontprovider.o: ../touchgfx/generated/texts/include/texts/TypedTextDatabase.hpp
+monitortrans\applicationfontprovider.o: ../middlewares/st/touchgfx/framework/include/touchgfx/TypedText.hpp
+monitortrans\applicationfontprovider.o: ../middlewares/st/touchgfx/framework/include/touchgfx/Texts.hpp

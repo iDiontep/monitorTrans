@@ -20,8 +20,8 @@
 #include <fonts/ApplicationFontProvider.hpp>
 #include <gui/common/FrontendHeap.hpp>
 #include <BitmapDatabase.hpp>
-#include <touchgfx/VectorFontRendererImpl.hpp>
 #include <platform/driver/lcd/LCD32bpp.hpp>
+#include <touchgfx/hal/OSWrappers.hpp>
 #include <STM32DMA.hpp>
 #include <TouchGFXHAL.hpp>
 #include <STM32TouchController.hpp>
@@ -34,18 +34,15 @@ extern "C" void touchgfx_components_init();
 static STM32TouchController tc;
 static STM32DMA dma;
 static LCD32bpp display;
-static VectorFontRendererImpl vectorFontRenderer;
 static ApplicationFontProvider fontProvider;
 static Texts texts;
-static TouchGFXHAL hal(dma, display, tc, 640, 480);
+static TouchGFXHAL hal(dma, display, tc, 800, 600);
 
 void touchgfx_init()
 {
     Bitmap::registerBitmapDatabase(BitmapDatabase::getInstance(), BitmapDatabase::getInstanceSize());
     TypedText::registerTexts(&texts);
     Texts::setLanguage(0);
-
-    display.setVectorFontRenderer(&vectorFontRenderer);
 
     FontManager::setFontProvider(&fontProvider);
 
@@ -68,12 +65,14 @@ void touchgfx_components_init()
 void touchgfx_taskEntry()
 {
     /*
-     * Main event loop. Will wait for VSYNC signal, and then process next frame. Call
-     * this function from your GUI task.
+     * Main event loop will check for VSYNC signal, and then process next frame.
      *
-     * Note This function never returns
+     * Note This function returns immediately if there is no VSYNC signal.
      */
-    hal.taskEntry();
+    if (OSWrappers::isVSyncAvailable())
+    {
+        hal.backPorchExited();
+    }
 }
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

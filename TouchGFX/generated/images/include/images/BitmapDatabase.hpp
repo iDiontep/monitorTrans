@@ -6,7 +6,7 @@
 #include <touchgfx/hal/Types.hpp>
 #include <touchgfx/Bitmap.hpp>
 
-const uint16_t BITMAP_ALTERNATE_THEME_IMAGES_BACKGROUNDS_800X480_RAYS_ID = 0;
+const uint16_t BITMAP_ALTERNATE_THEME_IMAGES_BACKGROUNDS_800X480_GRADIENT_DARK_ID = 0;
 
 namespace BitmapDatabase
 {

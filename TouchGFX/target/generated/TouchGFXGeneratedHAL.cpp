@@ -20,98 +20,53 @@
 #include <touchgfx/hal/OSWrappers.hpp>
 #include <gui/common/FrontendHeap.hpp>
 #include <touchgfx/hal/GPIO.hpp>
-
-#include <touchgfx/widgets/canvas/CWRVectorRenderer.hpp>
-
-#include <TouchGFX_GFXMMU.h>
-
-namespace touchgfx
-{
-VectorRenderer* VectorRenderer::getInstance()
-{
-    static CWRVectorRendererARGB8888 renderer;
-
-    return &renderer;
-}
-} // namespace touchgfx
+#include <touchgfx/hal/PaintImpl.hpp>
+#include <touchgfx/hal/PaintARGB8888Impl.hpp>
 
 #include "stm32l4xx.h"
 #include "stm32l4xx_hal_ltdc.h"
-#include "stm32l4xx_hal_gfxmmu.h"
-
-extern LTDC_HandleTypeDef hltdc;
-extern GFXMMU_HandleTypeDef hgfxmmu;
 
 using namespace touchgfx;
 
 namespace
 {
-// Use the section "TouchGFX_Framebuffer" in the linker script to specify the placement of the buffer
-LOCATION_PRAGMA_32("TouchGFX_Framebuffer")
-uint32_t frameBuf[(640 * 480) / 4] LOCATION_ATTRIBUTE_32("TouchGFX_Framebuffer");
+static uint16_t lcd_int_active_line;
+static uint16_t lcd_int_porch_line;
 }
 
 void TouchGFXGeneratedHAL::initialize()
 {
     HAL::initialize();
     registerEventListener(*(Application::getInstance()));
-    // Init GFXMMU with framebuffer pointer.
-    hgfxmmu.Init.Buffers.Buf0Address = (uint32_t)frameBuf;
-    if (HAL_GFXMMU_Init(&hgfxmmu) != HAL_OK)
-    {
-        while (1);
-    }
-
-    // Setup LUT with TouchGFX specific table.
-    // Note:
-    //   GFXMMU blocks pr. line: 256
-    //   GFXMMU block size in bytes: 16
-    if (HAL_GFXMMU_ConfigLut(&hgfxmmu, 0, 480, (uint32_t)touchgfx_gfxmmu_lut_config) != HAL_OK)
-    {
-        while (1);
-    }
-
-    // Read LTDC layer 0 config.
-    LTDC_LayerCfgTypeDef ltdcLayerConfig = hltdc.LayerCfg[0];
-
-    // Setup framebuffer address and image width of the LTDC layer 0.
-    ltdcLayerConfig.FBStartAdress = GFXMMU_VIRTUAL_BUFFER0_BASE;
-    ltdcLayerConfig.ImageWidth = (256 * 16) / 4;
-    if (HAL_LTDC_ConfigLayer(&hltdc, &ltdcLayerConfig, 0) != HAL_OK)
-    {
-        while (1);
-    }
-
-    HAL::getInstance()->setNumberOfBlocks(4);
-
-    setFrameBufferStartAddresses((void*)frameBuf, (void*)0, (void*)0);
-    if (!setFrameRefreshStrategy(HAL::REFRESH_STRATEGY_PARTIAL_BUFFER_TFT_CTRL))
-    {
-        while (1);
-    }
+    enableLCDControllerInterrupt();
+    enableInterrupts();
+    setFrameBufferStartAddresses((void*)0x00000000, (void*)0x29000000, (void*)0);
 }
 
 void TouchGFXGeneratedHAL::configureInterrupts()
 {
-    NVIC_SetPriority(DMA2D_IRQn, 9);
     NVIC_SetPriority(LTDC_IRQn, 9);
 }
 
 void TouchGFXGeneratedHAL::enableInterrupts()
 {
-    NVIC_EnableIRQ(DMA2D_IRQn);
     NVIC_EnableIRQ(LTDC_IRQn);
 }
 
 void TouchGFXGeneratedHAL::disableInterrupts()
 {
-    NVIC_DisableIRQ(DMA2D_IRQn);
     NVIC_DisableIRQ(LTDC_IRQn);
 }
 
 void TouchGFXGeneratedHAL::enableLCDControllerInterrupt()
 {
-    // Left empty intentionally
+    lcd_int_active_line = (LTDC->BPCR & LTDC_BPCR_AVBP_Msk) - 1;
+    lcd_int_porch_line = (LTDC->AWCR & LTDC_AWCR_AAH_Msk) - 1;
+
+    /* Sets the Line Interrupt position */
+    LTDC->LIPCR = lcd_int_active_line;
+    /* Line Interrupt Enable            */
+    LTDC->IER |= LTDC_IER_LIE;
 }
 
 bool TouchGFXGeneratedHAL::beginFrame()
@@ -122,28 +77,7 @@ bool TouchGFXGeneratedHAL::beginFrame()
 void TouchGFXGeneratedHAL::endFrame()
 {
     HAL::endFrame();
-}
-
-void TouchGFXGeneratedHAL::waitForLTDCLines(uint16_t numberOfLines)
-{
-    // The CPSR register (bits 15:0) specify current line of TFT controller.
-    uint16_t curr = LTDC->CPSR & LTDC_CPSR_CYPOS_Msk;
-
-    // The AWCR register (10:0) specify the accumulated active height.
-    uint16_t max = (LTDC->AWCR & LTDC_AWCR_AAH_Msk) - 1;
-
-    // Calculate the line at which to configure the interrupt.
-    curr += numberOfLines;
-    if (curr > max)
-    {
-        curr -= max;
-    }
-
-    // Configure line interrupt
-    HAL_LTDC_ProgramLineEvent(&hltdc, curr);
-
-    // Wait for VSync signal, which fires on the line interrupt that we just configured.
-    OSWrappers::waitForVSync();
+    touchgfx::OSWrappers::signalRenderingDone();
 }
 
 uint16_t* TouchGFXGeneratedHAL::getTFTFrameBuffer() const
@@ -151,9 +85,9 @@ uint16_t* TouchGFXGeneratedHAL::getTFTFrameBuffer() const
     return (uint16_t*)LTDC_Layer1->CFBAR;
 }
 
-void TouchGFXGeneratedHAL::setTFTFrameBuffer(uint16_t* /*adr*/)
+void TouchGFXGeneratedHAL::setTFTFrameBuffer(uint16_t* adr)
 {
-    LTDC_Layer1->CFBAR = (uint32_t)GFXMMU_VIRTUAL_BUFFER0_BASE; // Read framebuffer through GFXMMU
+    LTDC_Layer1->CFBAR = (uint32_t)adr;
 
     /* Reload immediate */
     LTDC->SRCR = (uint32_t)LTDC_SRCR_IMR;
@@ -169,44 +103,37 @@ bool TouchGFXGeneratedHAL::blockCopy(void* RESTRICT dest, const void* RESTRICT s
     return HAL::blockCopy(dest, src, numBytes);
 }
 
-uint16_t TouchGFXGeneratedHAL::getTFTCurrentLine()
-{
-    // This function only requires an implementation if partial buffering
-    // on LTDC driven display is being used (REFRESH_STRATEGY_PARTIAL_BUFFER_TFT_CTRL).
-
-    // The BPCR register (bits 10:0) specify the accumulated vertical back porch height.
-    uint16_t porch = (LTDC->BPCR & LTDC_BPCR_AVBP_Msk) + 1;
-
-    // The CPSR register (bits 15:0) specify current line of TFT controller.
-    uint16_t curr = LTDC->CPSR & LTDC_CPSR_CYPOS_Msk;
-
-    // The AWCR register (10:0) specify the accumulated active height.
-    uint16_t max = (LTDC->AWCR & LTDC_AWCR_AAH_Msk) - 1;
-
-    // The semantics of the getTFTCurrentLine() function is to return a value
-    // in the range of 0-activeheight. The active height is the number of active
-    // lines in the panel.
-    uint16_t result = 0;
-    if (curr <= porch)
-    {
-        result = 0;
-    }
-    else if (curr > max)
-    {
-        result = 0;
-    }
-    else
-    {
-        result = curr - porch;
-    }
-    return result;
-}
-
 extern "C"
 {
     void HAL_LTDC_LineEventCallback(LTDC_HandleTypeDef* hltdc)
     {
-        OSWrappers::signalVSync();
+        if (!HAL::getInstance())
+        {
+            return;
+        }
+
+        if (LTDC->LIPCR == lcd_int_active_line)
+        {
+            //entering active area
+            HAL_LTDC_ProgramLineEvent(hltdc, lcd_int_porch_line);
+            HAL::getInstance()->vSync();
+            OSWrappers::signalVSync();
+
+            // Swap frame buffers immediately instead of waiting for the task to be scheduled in.
+            // Note: task will also swap when it wakes up, but that operation is guarded and will not have
+            // any effect if already swapped.
+            HAL::getInstance()->swapFrameBuffers();
+            GPIO::set(GPIO::VSYNC_FREQ);
+        }
+        else
+        {
+            //exiting active area
+            HAL_LTDC_ProgramLineEvent(hltdc, lcd_int_active_line);
+
+            // Signal to the framework that display update has finished.
+            HAL::getInstance()->frontPorchEntered();
+            GPIO::clear(GPIO::VSYNC_FREQ);
+        }
     }
 }
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

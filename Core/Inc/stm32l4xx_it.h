@@ -51,21 +51,11 @@ void HardFault_Handler(void);
 void MemManage_Handler(void);
 void BusFault_Handler(void);
 void UsageFault_Handler(void);
+void SVC_Handler(void);
 void DebugMon_Handler(void);
+void PendSV_Handler(void);
+void SysTick_Handler(void);
 void TIM1_UP_TIM16_IRQHandler(void);
-void TIM2_IRQHandler(void);
-void TIM3_IRQHandler(void);
-void I2C1_EV_IRQHandler(void);
-void I2C1_ER_IRQHandler(void);
-void USART1_IRQHandler(void);
-void OCTOSPI1_IRQHandler(void);
-void I2C3_EV_IRQHandler(void);
-void I2C3_ER_IRQHandler(void);
-void OCTOSPI2_IRQHandler(void);
-void FPU_IRQHandler(void);
-void LTDC_IRQHandler(void);
-void LTDC_ER_IRQHandler(void);
-void GFXMMU_IRQHandler(void);
 /* USER CODE BEGIN EFP */
 
 /* USER CODE END EFP */

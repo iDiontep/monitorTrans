@@ -1,7 +1,7 @@
 
 {
   "Application": {
-    "Name": "code_full",
+    "Name": "monitorTrans",
     "TouchGfxPath": "../Middlewares/ST/touchgfx",
     "AvailableColorDepths": [ 32 ],
     "AvailableLCDs":
@@ -10,8 +10,8 @@
     },
     "AvailableResolutions": [
       {
-        "Width": 640,
-        "Height": 480
+        "Width": 800,
+        "Height": 600
       }
     ],
     "PostGenerateTargetCommand": "touchgfx update_project",
@@ -19,13 +19,11 @@
     "SubFamily": "STM32L4R7/S7",
     "Platform": "m4",
     "Toolchain": "MDK-ARM V5.32",
-    "ProjectFile": "../code_full.ioc",
+    "ProjectFile": "../monitorTrans.ioc",
     "OptionalComponentsRoot": "../Middlewares/ST/touchgfx_components",
     "OptionalComponents": [
     ],
     "AdditionalFeatures": [
-      "CWRVector",
-      "VectorFonts"
     ]
   },
   "Version": "4.25.0"

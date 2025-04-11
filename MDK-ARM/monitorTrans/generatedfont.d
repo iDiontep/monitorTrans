@@ -1,0 +1,13 @@
+monitortrans\generatedfont.o: ../touchgfx/generated/fonts/src/generatedfont.cpp
+monitortrans\generatedfont.o: ../touchgfx/generated/fonts/include/fonts/GeneratedFont.hpp
+monitortrans\generatedfont.o: ../middlewares/st/touchgfx/framework/include/touchgfx/ConstFont.hpp
+monitortrans\generatedfont.o: ../middlewares/st/touchgfx/framework/include/touchgfx/Font.hpp
+monitortrans\generatedfont.o: ../middlewares/st/touchgfx/framework/include/touchgfx/Unicode.hpp
+monitortrans\generatedfont.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
+monitortrans\generatedfont.o: ../middlewares/st/touchgfx/framework/include/touchgfx/hal/Types.hpp
+monitortrans\generatedfont.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\assert.h
+monitortrans\generatedfont.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+monitortrans\generatedfont.o: ../middlewares/st/touchgfx/framework/include/touchgfx/hal/Config.hpp
+monitortrans\generatedfont.o: ../touchgfx/generated/fonts/include/fonts/CompressedFontCache.hpp
+monitortrans\generatedfont.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
+monitortrans\generatedfont.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h

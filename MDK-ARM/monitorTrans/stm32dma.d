@@ -1,0 +1,10 @@
+monitortrans\stm32dma.o: ../TouchGFX/target/generated/STM32DMA.cpp
+monitortrans\stm32dma.o: ../TouchGFX/target/generated/STM32DMA.hpp
+monitortrans\stm32dma.o: ../middlewares/st/touchgfx/framework/include/touchgfx/hal/BlitOp.hpp
+monitortrans\stm32dma.o: ../middlewares/st/touchgfx/framework/include/touchgfx/hal/Types.hpp
+monitortrans\stm32dma.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\assert.h
+monitortrans\stm32dma.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+monitortrans\stm32dma.o: ../middlewares/st/touchgfx/framework/include/touchgfx/hal/Config.hpp
+monitortrans\stm32dma.o: ../middlewares/st/touchgfx/framework/include/touchgfx/hal/DMA.hpp
+monitortrans\stm32dma.o: ../middlewares/st/touchgfx/framework/include/touchgfx/hal/Atomic.hpp
+monitortrans\stm32dma.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\assert.h
