@@ -28,11 +28,11 @@ Project File Date:  04/10/2025
 *** Using Compiler 'V5.06 update 7 (build 960)', folder: 'C:\Keil_v5\ARM\ARMCC\Bin'
 Build target 'monitorTrans'
 compiling main.c...
-../Core/Src/main.c(78): warning:  #69-D: integer conversion resulted in truncation
-  	static const uint8_t ADV7342_I2C_ADDR = 0xD6 << 1;
+../Core/Src/main.c(77): warning:  #69-D: integer conversion resulted in truncation
+  	static const uint8_t ADV7342_I2C_ADDR = 0xD4 << 1;	// случай ALSB подключен к земле
 ../Core/Src/main.c: 1 warning, 0 errors
 linking...
-Program Size: Code=17966 RO-data=1790 RW-data=92 ZI-data=2772  
+Program Size: Code=18062 RO-data=1790 RW-data=92 ZI-data=2772  
 FromELF: creating hex file...
 "monitorTrans\monitorTrans.axf" - 0 Error(s), 1 Warning(s).
 
@@ -57,7 +57,7 @@ Package Vendor: Keil
 
    * Component: ARM::CMSIS:CORE:6.1.0
       Include file:  CMSIS/Core/Include/tz_context.h
-Build Time Elapsed:  00:00:05
+Build Time Elapsed:  00:00:03
 </pre>
 </body>
 </html>

@@ -74,8 +74,8 @@ HAL_StatusTypeDef ADV7342_Init(I2C_HandleTypeDef *hi2c);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-	//static const uint8_t ADV7342_I2C_ADDR = 0xD4 << 1;
-	static const uint8_t ADV7342_I2C_ADDR = 0xD6 << 1;
+	static const uint8_t ADV7342_I2C_ADDR = 0xD4 << 1;	// случай ALSB подключен к земле
+	//static const uint8_t ADV7342_I2C_ADDR = 0xD6 << 1; // случай ALSB подключен к питанию
 /* USER CODE END 0 */
 
 /**
@@ -127,12 +127,12 @@ int main(void)
   {
 		uint8_t reg_data;
     HAL_StatusTypeDef ret = HAL_I2C_Mem_Read(&hi2c1, ADV7342_I2C_ADDR, 0x00, 
-        I2C_MEMADD_SIZE_8BIT, &reg_data, 1, 100);
+        I2C_MEMADD_SIZE_8BIT, &reg_data, 1, 10000);
     
     if(ret == HAL_OK) {
         char msg[50];
         sprintf(msg, "Reg 0x00: 0x%02X\r\n", reg_data);
-        HAL_UART_Transmit(&huart1, (uint8_t*)msg, strlen(msg), 100);
+        HAL_UART_Transmit(&huart1, (uint8_t*)msg, strlen(msg), 1000);
     }
     HAL_Delay(1000);
     /* USER CODE END WHILE */
@@ -535,6 +535,13 @@ static void MX_GPIO_Init(void)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
 /* USER CODE BEGIN MX_GPIO_Init_1 */
+	/*Configure GPIO pins : PB8 (SCL) and PB9 (SDA) */
+	GPIO_InitStruct.Pin = GPIO_PIN_8 | GPIO_PIN_9;
+	GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
+	GPIO_InitStruct.Pull = GPIO_PULLUP;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+	GPIO_InitStruct.Alternate = GPIO_AF4_I2C1;
+	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
@@ -567,35 +574,48 @@ HAL_StatusTypeDef ADV7342_Init(I2C_HandleTypeDef *hi2c) {
     HAL_StatusTypeDef ret;
     uint8_t data[2];
     char msg[50];
-
+	
+		// Проверка готовности устройства
+			uint32_t tickstart = HAL_GetTick();
+		/*	while(HAL_I2C_IsDeviceReady(hi2c, ADV7342_I2C_ADDR, 10, 1000) != HAL_OK) {
+					if((HAL_GetTick() - tickstart) > 1000) {
+							HAL_UART_Transmit(&huart1, (uint8_t*)"Device not ready\r\n", 17, 100);
+							return HAL_ERROR;
+					}
+			}
+		HAL_Delay(10);
+*/
     // 1. Включение всех DAC и PLL (Power Mode Register 0x00)
     data[0] = 0x00;   // Subaddress
     data[1] = 0x00;   // Все DAC включены, PLL включен
-    ret = HAL_I2C_Mem_Write(hi2c, ADV7342_I2C_ADDR, 0x00, I2C_MEMADD_SIZE_8BIT, data, 2, 100);
+    ret = HAL_I2C_Mem_Write(hi2c, ADV7342_I2C_ADDR, 0x00, I2C_MEMADD_SIZE_8BIT, data, 2, 10000);
     if(ret != HAL_OK) {
         sprintf(msg, "Power Mode error: %d\r\n", ret);
         HAL_UART_Transmit(&huart1, (uint8_t*)msg, strlen(msg), 100);
         return ret;
     }
+		HAL_Delay(10);
 
     // 2. Настройка RGB вывода (Mode Register 0x02)
     data[0] = 0x00;   // RGB output, sync disabled
-    ret = HAL_I2C_Mem_Write(hi2c, ADV7342_I2C_ADDR, 0x02, I2C_MEMADD_SIZE_8BIT, data, 1, 100);
+    ret = HAL_I2C_Mem_Write(hi2c, ADV7342_I2C_ADDR, 0x02, I2C_MEMADD_SIZE_8BIT, data, 1, 10000);
     if(ret != HAL_OK) {
         sprintf(msg, "RGB Mode error: %d\r\n", ret);
         HAL_UART_Transmit(&huart1, (uint8_t*)msg, strlen(msg), 100);
         return ret;
     }
-
+		HAL_Delay(10);
+		
     // 3. Включение тестового паттерна (ED/HD Mode Register 2, 0x31)
     data[0] = 0x04;   // Bit 2 = 1 (Test Pattern Enable)
-    ret = HAL_I2C_Mem_Write(hi2c, ADV7342_I2C_ADDR, 0x31, I2C_MEMADD_SIZE_8BIT, data, 1, 100);
+    ret = HAL_I2C_Mem_Write(hi2c, ADV7342_I2C_ADDR, 0x31, I2C_MEMADD_SIZE_8BIT, data, 1, 10000);
     if(ret != HAL_OK) {
         sprintf(msg, "Test Pattern error: %d\r\n", ret);
         HAL_UART_Transmit(&huart1, (uint8_t*)msg, strlen(msg), 100);
         return ret;
     }
-
+		HAL_Delay(10);
+		
     // 4. Настройка цвета тестового паттерна (RGB 100% цветные полосы)
     // Y Level Register 0x36 (Luma)
     data[0] = 0xEB;   // 235 (100% белый)
@@ -608,7 +628,8 @@ HAL_StatusTypeDef ADV7342_Init(I2C_HandleTypeDef *hi2c) {
     // Cb Level Register 0x38 (Blue)
     data[0] = 0x6E;   // 110 (макс. синий)
     HAL_I2C_Mem_Write(hi2c, ADV7342_I2C_ADDR, 0x38, I2C_MEMADD_SIZE_8BIT, data, 1, 100);
-
+		HAL_Delay(10);
+		
     // 5. Дополнительные настройки для RGB
     // Включение RGB input (ED/HD Mode Register 6, 0x35)
     data[0] = 0x02;   // Bit 1 = 1 (RGB Input Enable)
